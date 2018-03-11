@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Jose Parreno Garcia" />
+
+
+<title>Advanced NN</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Advanced NN</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Advanced NN</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Advanced NN</h1>
+<h4 class="author"><em>Jose Parreno Garcia</em></h4>
+<h4 class="date"><em>March 2018</em></h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#the-learning-process"><span class="toc-section-number">1</span> The learning process</a><ul>
+<li><a href="#learning-as-an-optimization-process"><span class="toc-section-number">1.1</span> Learning as an optimization process</a></li>
+<li><a href="#the-score-and-the-loss-function"><span class="toc-section-number">1.2</span> The score and the loss function</a></li>
+<li><a href="#designing-the-loss-function"><span class="toc-section-number">1.3</span> Designing the loss function</a></li>
+<li><a href="#adding-the-regulizarion-term"><span class="toc-section-number">1.4</span> Adding the regulizarion term</a></li>
+</ul></li>
+<li><a href="#optimization-algorithms-and-stochastic-gradient-descent"><span class="toc-section-number">2</span> Optimization algorithms and stochastic gradient descent</a><ul>
+<li><a href="#introduction-to-optimization-algorithm"><span class="toc-section-number">2.1</span> Introduction to optimization algorithm</a></li>
+<li><a href="#random-search"><span class="toc-section-number">2.2</span> Random search</a></li>
+<li><a href="#local-search"><span class="toc-section-number">2.3</span> Local search</a></li>
+<li><a href="#gradient-descent-and-stochastic-gradient-descent-sgd"><span class="toc-section-number">2.4</span> Gradient descent and stochastic gradient descent (SGD)</a></li>
+</ul></li>
+<li><a href="#backpropagation"><span class="toc-section-number">3</span> Backpropagation</a><ul>
+<li><a href="#the-chain-rule"><span class="toc-section-number">3.1</span> The chain rule</a></li>
+<li><a href="#example-learning-weights-of-the-perceptron"><span class="toc-section-number">3.2</span> Example: learning weights of the perceptron</a></li>
+<li><a href="#automatic-differentiation"><span class="toc-section-number">3.3</span> Automatic differentiation</a></li>
+</ul></li>
+<li><a href="#hyper-parameters-optimization"><span class="toc-section-number">4</span> Hyper-parameters optimization</a><ul>
+<li><a href="#manual-vs-automatic-hyper-parameters-selection"><span class="toc-section-number">4.1</span> Manual vs automatic hyper-parameters selection</a></li>
+<li><a href="#random-search-and-grid-search"><span class="toc-section-number">4.2</span> Random search and grid search</a></li>
+<li><a href="#hyper-parameters-in-r-with-h2o"><span class="toc-section-number">4.3</span> Hyper-parameters in R with h2o</a></li>
+</ul></li>
+</ul>
+</div>
+
+<style>
+body {
+text-align: justify}
+</style>
+<p><br></p>
+<pre class="r"><code>library(knitr)</code></pre>
+<p>In this blog we are going to talk about</p>
+<ul>
+<li>The learning process</li>
+<li>Optimization algorithms and stochastic gradient descent</li>
+<li>Backpropagation</li>
+<li>Hyper-parameters optimization</li>
+</ul>
+<p><br></p>
+<div id="the-learning-process" class="section level1">
+<h1><span class="header-section-number">1</span> The learning process</h1>
+<div id="learning-as-an-optimization-process" class="section level2">
+<h2><span class="header-section-number">1.1</span> Learning as an optimization process</h2>
+<p><img src="images/1.PNG" width="690" /></p>
+</div>
+<div id="the-score-and-the-loss-function" class="section level2">
+<h2><span class="header-section-number">1.2</span> The score and the loss function</h2>
+<p><img src="images/2.PNG" width="735" /></p>
+<p><br></p>
+<p><img src="images/3.PNG" width="709" /></p>
+</div>
+<div id="designing-the-loss-function" class="section level2">
+<h2><span class="header-section-number">1.3</span> Designing the loss function</h2>
+<p><img src="images/4.PNG" width="742" /></p>
+<p><br></p>
+<p><img src="images/5.PNG" width="723" /></p>
+</div>
+<div id="adding-the-regulizarion-term" class="section level2">
+<h2><span class="header-section-number">1.4</span> Adding the regulizarion term</h2>
+<p><img src="images/6.PNG" width="730" /></p>
+<p><br></p>
+</div>
+</div>
+<div id="optimization-algorithms-and-stochastic-gradient-descent" class="section level1">
+<h1><span class="header-section-number">2</span> Optimization algorithms and stochastic gradient descent</h1>
+<div id="introduction-to-optimization-algorithm" class="section level2">
+<h2><span class="header-section-number">2.1</span> Introduction to optimization algorithm</h2>
+<p><img src="images/7.PNG" width="723" /></p>
+<p><br></p>
+<p><img src="images/8.PNG" width="724" /></p>
+</div>
+<div id="random-search" class="section level2">
+<h2><span class="header-section-number">2.2</span> Random search</h2>
+<p><img src="images/9.PNG" width="718" /></p>
+</div>
+<div id="local-search" class="section level2">
+<h2><span class="header-section-number">2.3</span> Local search</h2>
+<p><img src="images/10.PNG" width="736" /></p>
+</div>
+<div id="gradient-descent-and-stochastic-gradient-descent-sgd" class="section level2">
+<h2><span class="header-section-number">2.4</span> Gradient descent and stochastic gradient descent (SGD)</h2>
+<p><img src="images/11.PNG" width="742" /></p>
+<p><br></p>
+<p><img src="images/12.PNG" width="733" /></p>
+<p><br></p>
+<p><img src="images/13.PNG" width="689" /></p>
+<p><br></p>
+<p><img src="images/14.PNG" width="683" /></p>
+<p><br></p>
+<p><img src="images/15.PNG" width="704" /></p>
+<p><br></p>
+<p><img src="images/16.PNG" width="719" /></p>
+<p><br></p>
+</div>
+</div>
+<div id="backpropagation" class="section level1">
+<h1><span class="header-section-number">3</span> Backpropagation</h1>
+<div id="the-chain-rule" class="section level2">
+<h2><span class="header-section-number">3.1</span> The chain rule</h2>
+<p><img src="images/17.PNG" width="692" /></p>
+<p><br></p>
+<p><img src="images/18.PNG" width="718" /></p>
+<p><br></p>
+<p><img src="images/19.PNG" width="718" /></p>
+</div>
+<div id="example-learning-weights-of-the-perceptron" class="section level2">
+<h2><span class="header-section-number">3.2</span> Example: learning weights of the perceptron</h2>
+<p><img src="images/20.PNG" width="756" /></p>
+<p><br></p>
+<p><img src="images/21.PNG" width="745" /></p>
+</div>
+<div id="automatic-differentiation" class="section level2">
+<h2><span class="header-section-number">3.3</span> Automatic differentiation</h2>
+<p><img src="images/22.PNG" width="720" /></p>
+<p><br></p>
+</div>
+</div>
+<div id="hyper-parameters-optimization" class="section level1">
+<h1><span class="header-section-number">4</span> Hyper-parameters optimization</h1>
+<div id="manual-vs-automatic-hyper-parameters-selection" class="section level2">
+<h2><span class="header-section-number">4.1</span> Manual vs automatic hyper-parameters selection</h2>
+<p><img src="images/23.PNG" width="716" /></p>
+<p><br></p>
+<p><img src="images/24.PNG" width="750" /></p>
+</div>
+<div id="random-search-and-grid-search" class="section level2">
+<h2><span class="header-section-number">4.2</span> Random search and grid search</h2>
+<p>In the following image you can see 2 different possible distribution for hyper parameter searching. The grid layout is quite a rigid method if you can’t look through ALL possible values. As you can see, in this example, grid search would miss on the best value (green hill) as the grey dots fall just at either side of it. With random search, you have a better chance (although not guaranteed), that parameters chosen will cover a wider spectrum of the values.</p>
+<p><img src="images/25.PNG" width="667" /></p>
+</div>
+<div id="hyper-parameters-in-r-with-h2o" class="section level2">
+<h2><span class="header-section-number">4.3</span> Hyper-parameters in R with h2o</h2>
+<p><img src="images/26.PNG" width="733" /></p>
+<pre class="r"><code>library(mlbench)
+library(h2o)
+h2o.init(nthreads = -1)</code></pre>
+<pre><code>##  Connection successful!
+## 
+## R is connected to the H2O cluster: 
+##     H2O cluster uptime:         18 minutes 25 seconds 
+##     H2O cluster version:        3.16.0.2 
+##     H2O cluster version age:    3 months and 10 days  
+##     H2O cluster name:           H2O_started_from_R_garciaj_tcn130 
+##     H2O cluster total nodes:    1 
+##     H2O cluster total memory:   0.77 GB 
+##     H2O cluster total cores:    4 
+##     H2O cluster allowed cores:  4 
+##     H2O cluster healthy:        TRUE 
+##     H2O Connection ip:          localhost 
+##     H2O Connection port:        54321 
+##     H2O Connection proxy:       NA 
+##     H2O Internal Security:      FALSE 
+##     H2O API Extensions:         Algos, AutoML, Core V3, Core V4 
+##     R Version:                  R version 3.4.0 (2017-04-21)</code></pre>
+<pre class="r"><code>data(BreastCancer)
+
+data = BreastCancer
+
+data[, c(1:ncol(data))] &lt;- sapply(data[, c(1:ncol(data))], as.numeric)
+data[, &#39;Class&#39;] &lt;- as.factor(data[, &#39;Class&#39;])
+
+train_h2o &lt;- as.h2o(data[1:300,])</code></pre>
+<pre><code>## 
+  |                                                                                                                                                                                                                                                      
+  |                                                                                                                                                                                                                                                |   0%
+  |                                                                                                                                                                                                                                                      
+  |================================================================================================================================================================================================================================================| 100%</code></pre>
+<pre class="r"><code>val_h2o &lt;- as.h2o(data[301:500,])</code></pre>
+<pre><code>## 
+  |                                                                                                                                                                                                                                                      
+  |                                                                                                                                                                                                                                                |   0%
+  |                                                                                                                                                                                                                                                      
+  |================================================================================================================================================================================================================================================| 100%</code></pre>
+<pre class="r"><code>test_h2o &lt;- as.h2o(data[501:699,])</code></pre>
+<pre><code>## 
+  |                                                                                                                                                                                                                                                      
+  |                                                                                                                                                                                                                                                |   0%
+  |                                                                                                                                                                                                                                                      
+  |================================================================================================================================================================================================================================================| 100%</code></pre>
+<pre class="r"><code>head(train_h2o)</code></pre>
+<pre><code>##        Id Cl.thickness Cell.size Cell.shape Marg.adhesion Epith.c.size Bare.nuclei Bl.cromatin Normal.nucleoli Mitoses Class
+## 1 1000025            5         1          1             1            2           1           3               1       1     1
+## 2 1002945            5         4          4             5            7          10           3               2       1     1
+## 3 1015425            3         1          1             1            2           2           3               1       1     1
+## 4 1016277            6         8          8             1            3           4           3               7       1     1
+## 5 1017023            4         1          1             3            2           1           3               1       1     1
+## 6 1017122            8        10         10             8            7          10           9               7       1     2</code></pre>
+<p><br></p>
+<p>Now we can choose the best hyper-parameters using the random search:</p>
+<pre class="r"><code>hyper_params &lt;- list(
+  activation = c(&quot;Rectifier&quot;,&quot;Tanh&quot;,&quot;Maxout&quot;,
+                 &quot;RectifierWithDropout&quot;,&quot;TanhWithDropout&quot;,
+                 &quot;MaxoutWithDropout&quot;),
+  hidden = list(c(20,20),c(50,50),c(30,30,30),c(25,25,25,25)),
+  input_dropout_ratio = c(0,0.05),
+  l1 = seq(0,1e-4,1e-6),
+  l2 = seq(0,1e-4,1e-6)
+)
+
+## Stop once the top 5 models are within 1% of each other (i.e., the windowed average varies less than 1%)
+search_criteria = list(
+  strategy = &quot;RandomDiscrete&quot;, max_runtime_secs = 360,     
+  max_models = 100, seed=1234567, stopping_rounds=5, 
+  stopping_tolerance=1e-2
+)
+
+dl_random_grid &lt;- h2o.grid(
+  algorithm=&quot;deeplearning&quot;,
+  grid_id = &quot;dl_grid_random_1&quot;,
+  training_frame=train_h2o,
+  validation_frame=val_h2o, 
+  x=2:10, 
+  y=11,
+  epochs=1,
+  ## stop when logloss does not improve by &gt;=1% for 2 scoring events
+  stopping_metric=&quot;logloss&quot;,
+  stopping_tolerance=1e-2,        
+  stopping_rounds=2,
+  hyper_params = hyper_params,
+  search_criteria = search_criteria
+)                                </code></pre>
+<pre><code>## 
+  |                                                                                                                                                                                                                                                      
+  |                                                                                                                                                                                                                                                |   0%
+  |                                                                                                                                                                                                                                                      
+  |=                                                                                                                                                                                                                                               |   0%
+  |                                                                                                                                                                                                                                                      
+  |===========================================                                                                                                                                                                                                     |  18%
+  |                                                                                                                                                                                                                                                      
+  |===================================================================================                                                                                                                                                             |  35%
+  |                                                                                                                                                                                                                                                      
+  |====================================================================================================================                                                                                                                            |  48%
+  |                                                                                                                                                                                                                                                      
+  |=============================================================================================================================================================                                                                                   |  66%
+  |                                                                                                                                                                                                                                                      
+  |=========================================================================================================================================================================================                                                       |  77%
+  |                                                                                                                                                                                                                                                      
+  |================================================================================================================================================================================================================                                |  87%
+  |                                                                                                                                                                                                                                                      
+  |==========================================================================================================================================================================================================================================      |  97%
+  |                                                                                                                                                                                                                                                      
+  |================================================================================================================================================================================================================================================| 100%</code></pre>
+<pre class="r"><code>grid &lt;- h2o.getGrid(&quot;dl_grid_random_1&quot;,sort_by=&quot;logloss&quot;,
+                    decreasing=FALSE)
+
+grid@summary_table</code></pre>
+<pre><code>## Hyper-Parameter Search Summary: ordered by increasing logloss
+##        activation           hidden input_dropout_ratio     l1     l2                 model_ids             logloss
+## 1            Tanh [25, 25, 25, 25]                 0.0 2.9E-5 8.8E-5  dl_grid_random_1_model_7  0.0841935192211505
+## 2            Tanh     [30, 30, 30]                 0.0 9.8E-5 2.1E-5 dl_grid_random_1_model_80 0.08431354797573823
+## 3       Rectifier     [30, 30, 30]                0.05 7.0E-5 8.2E-5  dl_grid_random_1_model_1 0.08685435725751754
+## 4            Tanh         [50, 50]                0.05 6.6E-5 1.0E-5 dl_grid_random_1_model_27 0.08835133094138017
+## 5 TanhWithDropout         [20, 20]                 0.0 3.2E-5 1.8E-5 dl_grid_random_1_model_18 0.09450682039717531
+## 
+## ---
+##               activation           hidden input_dropout_ratio     l1     l2                 model_ids            logloss
+## 95     MaxoutWithDropout [25, 25, 25, 25]                0.05 5.0E-5 1.5E-5 dl_grid_random_1_model_59 0.5208665732250989
+## 96     MaxoutWithDropout [25, 25, 25, 25]                0.05 5.9E-5 3.2E-5 dl_grid_random_1_model_55  0.570838379200818
+## 97     MaxoutWithDropout [25, 25, 25, 25]                 0.0 2.2E-5 8.2E-5 dl_grid_random_1_model_73 0.5932801592085726
+## 98  RectifierWithDropout     [30, 30, 30]                0.05 5.0E-6 1.2E-5  dl_grid_random_1_model_2 0.6088138183385655
+## 99  RectifierWithDropout [25, 25, 25, 25]                 0.0 1.4E-5 6.2E-5 dl_grid_random_1_model_46 0.6229406170502836
+## 100    MaxoutWithDropout [25, 25, 25, 25]                 0.0 6.7E-5 1.5E-5 dl_grid_random_1_model_87 0.7465185899480217</code></pre>
+<pre class="r"><code>## model with lowest logloss
+best_model &lt;- h2o.getModel(grid@model_ids[[1]]) 
+best_model</code></pre>
+<pre><code>## Model Details:
+## ==============
+## 
+## H2OBinomialModel: deeplearning
+## Model ID:  dl_grid_random_1_model_7 
+## Status of Neuron Layers: predicting Class, 2-class classification, bernoulli distribution, CrossEntropy loss, 2,252 weights/biases, 33.5 KB, 318 training samples, mini-batch size 1
+##   layer units    type dropout       l1       l2 mean_rate rate_rms momentum mean_weight weight_rms mean_bias bias_rms
+## 1     1     9   Input  0.00 %                                                                                        
+## 2     2    25    Tanh  0.00 % 0.000029 0.000088  0.010852 0.008996 0.000000    0.025274   0.241313  0.000061 0.003570
+## 3     3    25    Tanh  0.00 % 0.000029 0.000088  0.019822 0.017134 0.000000    0.005957   0.204827  0.000874 0.006012
+## 4     4    25    Tanh  0.00 % 0.000029 0.000088  0.021455 0.028539 0.000000   -0.006568   0.203931 -0.000347 0.003229
+## 5     5    25    Tanh  0.00 % 0.000029 0.000088  0.031572 0.097914 0.000000   -0.005553   0.199576  0.000644 0.001890
+## 6     6     2 Softmax         0.000029 0.000088  0.012897 0.007825 0.000000   -0.310092   0.976876 -0.000295 0.003346
+## 
+## 
+## H2OBinomialMetrics: deeplearning
+## ** Reported on training data. **
+## ** Metrics reported on full training frame **
+## 
+## MSE:  0.04691289
+## RMSE:  0.2165938
+## LogLoss:  0.1610629
+## Mean Per-Class Error:  0.0410416
+## AUC:  0.9853567
+## Gini:  0.9707134
+## 
+## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+##          1   2    Error     Rate
+## 1      152  11 0.067485  =11/163
+## 2        2 135 0.014599   =2/137
+## Totals 154 146 0.043333  =13/300
+## 
+## Maximum Metrics: Maximum metrics at their respective thresholds
+##                         metric threshold    value idx
+## 1                       max f1  0.211963 0.954064 142
+## 2                       max f2  0.076198 0.973011 152
+## 3                 max f0point5  0.571401 0.943838 122
+## 4                 max accuracy  0.211963 0.956667 142
+## 5                max precision  0.997472 1.000000   0
+## 6                   max recall  0.076198 1.000000 152
+## 7              max specificity  0.997472 1.000000   0
+## 8             max absolute_mcc  0.211963 0.914788 142
+## 9   max min_per_class_accuracy  0.323440 0.944785 135
+## 10 max mean_per_class_accuracy  0.211963 0.958958 142
+## 
+## Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`
+## H2OBinomialMetrics: deeplearning
+## ** Reported on validation data. **
+## ** Metrics reported on full validation frame **
+## 
+## MSE:  0.02249092
+## RMSE:  0.1499697
+## LogLoss:  0.08419352
+## Mean Per-Class Error:  0.01428571
+## AUC:  0.9964286
+## Gini:  0.9928571
+## 
+## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
+##          1  2    Error    Rate
+## 1      136  4 0.028571  =4/140
+## 2        0 60 0.000000   =0/60
+## Totals 136 64 0.020000  =4/200
+## 
+## Maximum Metrics: Maximum metrics at their respective thresholds
+##                         metric threshold    value idx
+## 1                       max f1  0.235766 0.967742  63
+## 2                       max f2  0.235766 0.986842  63
+## 3                 max f0point5  0.716381 0.968310  55
+## 4                 max accuracy  0.235766 0.980000  63
+## 5                max precision  0.996018 1.000000   0
+## 6                   max recall  0.235766 1.000000  63
+## 7              max specificity  0.996018 1.000000   0
+## 8             max absolute_mcc  0.235766 0.954314  63
+## 9   max min_per_class_accuracy  0.306766 0.971429  62
+## 10 max mean_per_class_accuracy  0.235766 0.985714  63
+## 
+## Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`</code></pre>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
